@@ -14,4 +14,4 @@
 
 -Um produto tem várias ofertas (1:N)
 -uma loja tem várias ofertas (1:N)
--Um Usuário tem vários Favoritos, que apontam para Produtos (N:N via tabela Favorito)
+-Um Usuário tem vários Favoritos, que apontam para Produtos (N:N via tabela Favorito)7
