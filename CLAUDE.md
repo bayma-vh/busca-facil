@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Sobre o projeto
 
-Busca Fácil: plataforma de busca e comparação de preços de produtos entre lojas. É um projeto de estudo (APIs REST, banco de dados, arquitetura). Fase atual: **v0.1, somente backend**, com a entidade `Produto` criada (pacote `produto/`) e ainda sem repository, service ou endpoints. Organização por funcionalidade: cada entidade tem seu pacote com entidade, repository, service e controller.
+Busca Fácil: plataforma de busca e comparação de preços de produtos entre lojas. É um projeto de estudo (APIs REST, banco de dados, arquitetura). Fase atual: **v0.1, somente backend**, com a entidade `Produto` e o `ProdutoRepository` criados (pacote `produto/`), ainda sem service ou endpoints. Testes de repository usam `@DataJpaTest` (no Boot 4: `org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest`). Organização por funcionalidade: cada entidade tem seu pacote com entidade, repository, service e controller.
 
 - `backend/`: API em Java 25 + Spring Boot 4.1 (Web MVC, Data JPA, Validation, Lombok), pacote base `com.busca_facil.backend`.
 - `frontend/`: vazio por enquanto. O plano é Next.js + React + TypeScript.
