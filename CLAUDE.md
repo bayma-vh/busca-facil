@@ -6,13 +6,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Responda sempre em português (Brasil).**
 - **Projeto de estudo: explique tudo.** Ao usar ou mencionar qualquer termo, ferramenta, tecnologia ou comando, explique **o que é**, **como funciona** e **por que usar** neste contexto. Isso vale também para cada comando executado no terminal.
-- **Nunca faça `git commit` nem `git push` sem pedido explícito.** Mostre o que seria commitado e pergunte antes.
+- **Nunca faça `git push` sem pedido explícito.** Commits seguem o fluxo abaixo.
+
+## Fluxo de trabalho por componente
+
+Quando o usuário pedir o próximo componente, siga este modelo:
+1. **Implementar** o componente com seus testes; rodar `./mvnw test` e, quando fizer sentido, testar no Docker (`docker compose up -d --build` + requisições reais).
+2. **Documentar** em `docs/<componente>.md`, em linguagem clara e detalhada: como funciona (conceitos, anotações, fluxo) e como usar (exemplos reais, saídas observadas, problemas comuns). Atualizar este CLAUDE.md se o estado do projeto mudar.
+3. **Commitar** (autorizado nesse fluxo): um commit por componente, código + testes + documento juntos, mensagem Conventional Commits em português (`feat:`, `docs:`, `chore:`), coerente com a branch atual. Mudanças pendentes de outro assunto vão em commit separado. **Não fazer push** sem pedido.
 
 ## Sobre o projeto
 
-Busca Fácil: plataforma de busca e comparação de preços de produtos entre lojas. É um projeto de estudo (APIs REST, banco de dados, arquitetura). Fase atual: **v0.1, somente backend**, com entidade `Produto`, `ProdutoRepository` e `ProdutoService` criados (pacote `produto/`), ainda sem controller/endpoints. Regras de negócio ficam no service (injeção por construtor, `@Transactional`; `atualizar` usa dirty checking, sem `save`). Exceções de negócio são `RuntimeException` (ex.: `ProdutoNaoEncontradoException`), a serem mapeadas para HTTP no controller.
+Busca Fácil: plataforma de busca e comparação de preços de produtos entre lojas. É um projeto de estudo (APIs REST, banco de dados, arquitetura). Fase atual: **v0.1, somente backend, CRUD de Produto completo** (pacote `produto/`): entidade, repository, service, controller REST em `/produtos` e DTOs (`record`s `ProdutoRequest`/`ProdutoResponse`). Próximo marco: PR para `desenvolvimento` e depois v0.2 (Loja, Oferta).
 
-Padrão de testes: unitário do service com Mockito (`@ExtendWith(MockitoExtension.class)`, sem Spring); repository e integração com `@DataJpaTest` (+ `@Import` do service). No Boot 4 os pacotes mudaram: `org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest` e `org.springframework.boot.jpa.test.autoconfigure.TestEntityManager`. Organização por funcionalidade: cada entidade tem seu pacote com entidade, repository, service e controller.
+Arquitetura em camadas: Controller (HTTP ↔ DTO, `@Valid`) → Service (regras de negócio, `@Transactional`, injeção por construtor; `atualizar` usa dirty checking, sem `save`) → Repository (Spring Data JPA). Exceções de negócio são `RuntimeException` (ex.: `ProdutoNaoEncontradoException`, `IllegalArgumentException`) e viram HTTP no `erro/TratadorDeErros` (`@RestControllerAdvice`, formato `ProblemDetail`/RFC 9457: 404, 400, 400 com mapa `erros` por campo). Nunca expor a entidade na API; usar DTOs. Organização por funcionalidade: cada entidade tem seu pacote; o pacote `erro/` é compartilhado.
+
+Padrão de testes: unitário do service com Mockito (`@ExtendWith(MockitoExtension.class)`, sem Spring); repository e integração com `@DataJpaTest` (+ `@Import` do service); controller com `@WebMvcTest` + `MockMvc` + `@MockitoBean`. No Boot 4 os pacotes mudaram: `org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest`, `org.springframework.boot.jpa.test.autoconfigure.TestEntityManager`, `org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest`, `org.springframework.test.context.bean.override.mockito.MockitoBean` (o antigo `@MockBean` não existe).
 
 - `backend/`: API em Java 25 + Spring Boot 4.1 (Web MVC, Data JPA, Validation, Lombok), pacote base `com.busca_facil.backend`.
 - `frontend/`: vazio por enquanto. O plano é Next.js + React + TypeScript.
@@ -47,6 +56,10 @@ docker compose down               # para tudo (o volume mysql_data guarda os dad
 
 Não há linter configurado.
 
+Particularidades deste ambiente (Windows):
+- O Maven pode falhar ao baixar plugins/dependências (`PKIX path building failed`, certificado). Se o necessário já está em `~/.m2`, use `./mvnw -o test` (offline).
+- Ao testar a API com `curl -d` no Git Bash, acentos chegam fora de UTF-8 (`Invalid UTF-8 middle byte` → 400). Envie o corpo de um arquivo UTF-8 com `--data-binary @arquivo.json`. O PowerShell 5.1 exibe respostas com acento errado (`Ã¡`), mas os dados estão corretos.
+
 ## Configuração e banco de dados (como as peças se conectam)
 
 - As credenciais ficam no `.env` da raiz, que o Git ignora: `MYSQL_ROOT_PASSWORD`, `DB_USER`, `DB_PASSWORD`. O `docker-compose.yml` lê esse arquivo.
@@ -55,5 +68,6 @@ Não há linter configurado.
   - **Fora do Docker:** padrão `localhost:3307`, a porta do MySQL do compose exposta no host.
   - **Dentro do Docker:** o compose define `SPRING_DATASOURCE_URL` apontando para `mysql:3306`, e essa variável sobrescreve o padrão.
 - `spring.jpa.hibernate.ddl-auto=update`: o Hibernate cria e altera as tabelas a partir das classes `@Entity`. Não há migrations (Flyway/Liquibase).
+- `spring.jpa.open-in-view=false` (acesso ao banco só dentro das transações do service) e `spring.mvc.problemdetails.enabled=true` (erros padrão do Spring também em Problem Details).
 - Testes **não usam o MySQL**: `backend/src/test/resources/application.properties` substitui o principal (vem antes no classpath) e aponta para o H2 em memória (`MODE=MySQL`, `ddl-auto=create-drop`). O `.env` não é importado nos testes. `./mvnw test` funciona sem Docker.
 - O `backend/Dockerfile` usa build multi-stage (Maven + Temurin 25 → JRE 25). Ao mudar `java.version` no `pom.xml`, atualize também as imagens do Dockerfile.
