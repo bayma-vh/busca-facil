@@ -2,7 +2,7 @@
 
 ## 1. Estado atual da branch `feature/v0.1-backend`
 
-- Esqueleto Spring Boot 4.1.1 + Java 21 em `backend/`, sem nenhuma entidade, controller ou endpoint ainda.
+- Esqueleto Spring Boot 4.1.1 + Java 25 em backend/, com a entidade Produto, repository, service, controller e testes (v0.1 concluída).
 - `docker-compose.yml` sobe MySQL 8.0 (porta 3307 no seu PC) e o back-end (porta 8080).
 - O `dockerfile` antigo da raiz **já foi removido** no commit `90e73e7`, então isso está resolvido.
 - Rodei `./mvnw test` aqui: o teste `contextLoads` **falha** com
