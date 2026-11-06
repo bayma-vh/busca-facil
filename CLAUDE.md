@@ -17,7 +17,7 @@ Quando o usuário pedir o próximo componente, siga este modelo:
 
 ## Sobre o projeto
 
-Busca Fácil: plataforma de busca e comparação de preços de produtos entre lojas. É um projeto de estudo (APIs REST, banco de dados, arquitetura). Fase atual: **v0.1, somente backend, CRUD de Produto completo** (pacote `produto/`): entidade, repository, service, controller REST em `/produtos` e DTOs (`record`s `ProdutoRequest`/`ProdutoResponse`). Próximo marco: PR para `desenvolvimento` e depois v0.2 (Loja, Oferta).
+Busca Fácil: plataforma de busca e comparação de preços de produtos entre lojas. É um projeto de estudo (APIs REST, banco de dados, arquitetura). Fase atual: **v0.1 concluída e mesclada em `desenvolvimento`** (PR #1 backend, PR #2 frontend). Backend: CRUD de Produto completo (pacote `produto/`): entidade, repository, service, controller REST em `/produtos` e DTOs (`record`s `ProdutoRequest`/`ProdutoResponse`). Frontend: SPA com busca e CRUD de produtos. Próximo marco: v0.2 (Loja, Oferta).
 
 Arquitetura em camadas: Controller (HTTP ↔ DTO, `@Valid`) → Service (regras de negócio, `@Transactional`, injeção por construtor; `atualizar` usa dirty checking, sem `save`) → Repository (Spring Data JPA). Exceções de negócio são `RuntimeException` (ex.: `ProdutoNaoEncontradoException`, `IllegalArgumentException`) e viram HTTP no `erro/TratadorDeErros` (`@RestControllerAdvice`, formato `ProblemDetail`/RFC 9457: 404, 400, 400 com mapa `erros` por campo). Nunca expor a entidade na API; usar DTOs. Organização por funcionalidade: cada entidade tem seu pacote; o pacote `erro/` é compartilhado.
 
@@ -32,7 +32,7 @@ Padrão de testes: unitário do service com Mockito (`@ExtendWith(MockitoExtensi
 ## Fluxo de branches
 
 - Branch principal / alvo de PRs: `desenvolvimento`.
-- Trabalho atual: `feature/v0.1-frontend`, ramificada a partir da `main`.
+- Uma branch por versão e camada, criada a partir de `desenvolvimento` (ex.: `feature/v0.1-backend`, `feature/v0.1-frontend`, já mescladas). A próxima é a da v0.2.
 
 ## Comandos
 
@@ -56,8 +56,6 @@ npm run dev    # roda o servidor de desenvolvimento na porta 5173
 npm run lint   # checa boas práticas com oxlint
 npm run build  # checa tipos com TypeScript (tsc) e gera build em dist/
 ```
-./mvnw test -Dtest=BackendApplicationTests#contextLoads  # roda um único método
-```
 
 Docker (na raiz do repositório):
 
@@ -67,7 +65,9 @@ docker compose up -d --build      # sobe MySQL + backend em containers
 docker compose down               # para tudo (o volume mysql_data guarda os dados)
 ```
 
-Não há linter configurado.
+O frontend não roda em container; para usá-lo, rode `npm run dev` com o backend ativo na porta 8080.
+
+Linter: só no frontend (`npm run lint`, oxlint). O backend não tem linter configurado.
 
 Particularidades deste ambiente (Windows):
 - O Maven pode falhar ao baixar plugins/dependências (`PKIX path building failed`, certificado). Se o necessário já está em `~/.m2`, use `./mvnw -o test` (offline).
