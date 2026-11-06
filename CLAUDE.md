@@ -24,14 +24,15 @@ Arquitetura em camadas: Controller (HTTP ↔ DTO, `@Valid`) → Service (regras 
 Padrão de testes: unitário do service com Mockito (`@ExtendWith(MockitoExtension.class)`, sem Spring); repository e integração com `@DataJpaTest` (+ `@Import` do service); controller com `@WebMvcTest` + `MockMvc` + `@MockitoBean`. No Boot 4 os pacotes mudaram: `org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest`, `org.springframework.boot.jpa.test.autoconfigure.TestEntityManager`, `org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest`, `org.springframework.test.context.bean.override.mockito.MockitoBean` (o antigo `@MockBean` não existe).
 
 - `backend/`: API em Java 25 + Spring Boot 4.1 (Web MVC, Data JPA, Validation, Lombok), pacote base `com.busca_facil.backend`.
-- `frontend/`: vazio por enquanto. O plano é Next.js + React + TypeScript.
+- `frontend/`: SPA em React 19 + TypeScript + Vite 8. Faz busca e CRUD de produtos consumindo a API via proxy (`/produtos` -> `localhost:8080`).
+- `docs/frontend.md`: guia passo a passo da criação e funcionamento do frontend.
 - `docs/modelo-dados.md`: modelo de dados planejado e em qual versão cada entidade entra. Produto (v0.1), Loja e Oferta (v0.2), Usuario (v0.3), Favorito (v0.4). Siga esse roteiro ao criar entidades.
 - O README cita PostgreSQL, mas **o banco usado de fato é MySQL 8** (docker-compose + `mysql-connector-j`).
 
 ## Fluxo de branches
 
 - Branch principal / alvo de PRs: `desenvolvimento`.
-- Trabalho atual: `feature/v0.1-backend`, uma branch por versão.
+- Trabalho atual: `feature/v0.1-frontend`, ramificada a partir da `main`.
 
 ## Comandos
 
@@ -43,6 +44,18 @@ cd backend
 ./mvnw clean package                        # compila e gera o .jar em target/
 ./mvnw test                                 # roda todos os testes
 ./mvnw test -Dtest=BackendApplicationTests  # roda uma classe de teste
+./mvnw test -Dtest=BackendApplicationTests#contextLoads  # roda um único método
+```
+
+Os comandos do frontend rodam dentro de `frontend/` com npm (ou `npm.cmd` no PowerShell do Windows):
+
+```bash
+cd frontend
+npm install    # baixa dependências
+npm run dev    # roda o servidor de desenvolvimento na porta 5173
+npm run lint   # checa boas práticas com oxlint
+npm run build  # checa tipos com TypeScript (tsc) e gera build em dist/
+```
 ./mvnw test -Dtest=BackendApplicationTests#contextLoads  # roda um único método
 ```
 
